@@ -1,0 +1,12 @@
+name: TTP
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - python=3.11 # Install Python 3.11, 3.12 is too new for some packages 16/10/23
+  - numpy # Of course, you need numpy
+  - pytorch # Install PyTorch for deep learning
+  - transformers # Install the Hugging Face Transformers library
+  - matplotlib # For data visualization
+  - scikit-learn # For machine learning utilities
+
