@@ -3,14 +3,17 @@ import os
 import random
 from transformers import AutoTokenizer
 
+
 from utils.text_preprocessor import (
-    parse_text_into_sentences,
+    parse_textdoc_into_sentences,
+    parse_PDF_into_sentences,
     translate_sentance_GAPI,
     subword_tokenize_sentence,
     encode_sentance_pair,
     decode_sentance_pair,
     initialize_translation_client,
     translate_sentance_GAPI,
+    clean_apply_all,
 )
 
 from utils.test_installation import (
@@ -32,7 +35,7 @@ tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
 
 
 def preprocess_raw_data(data_path, tokenizer):
-    # sentances = parse_text_into_sentences(data_path)
+    # sentances = parse_textdoc_into_sentences(data_path)
     # random_sentance = sentances[random.randint(0, sentances.__len__())]
 
     # tokenized_sentance = subword_tokenize_sentence(random_sentance, tokenizer)
@@ -62,14 +65,23 @@ def preprocess_raw_data(data_path, tokenizer):
         "translated_sentence": ex_sv,
     }
 
-    #insert_translated_pair(connection, data, table_name)
-    
-    translations = get_all_translations(connection, table_name)
-    
-    length = get_table_length(connection, table_name)
-    
-    single_entry = get_translated_pair(connection, table_name, 1, lang_from, lang_to)
-    print(single_entry)
+    # insert_translated_pair(connection, data, table_name)
+
+    # translations = get_all_translations(connection, table_name)
+
+    # length = get_table_length(connection, table_name)
+
+    # single_entry = get_translated_pair(connection, table_name, 1, lang_from, lang_to)
+    # print(single_entry)
+
+    sentences = parse_PDF_into_sentences(data_path)
+    sentences = clean_apply_all(sentences)
+    # for sentence in sentences:
+    # print("---------------------------------------------------------------")
+    # print(sentence)
+
+    ex = sentences[28]
+    print(ex)
 
 
 def create_dataset(data_path):

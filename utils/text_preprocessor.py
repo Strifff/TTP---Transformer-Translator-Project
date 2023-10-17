@@ -1,10 +1,13 @@
 import nltk
 import os
+import pdfplumber
+import string
+import re
 
 from google.cloud import translate_v2 as translate
 
 
-def parse_text_into_sentences(path):
+def parse_textdoc_into_sentences(path):
     # Use NLTK's sent_tokenize to split the text into sentences
     sentences = []
     for file in os.listdir(path):
@@ -16,11 +19,50 @@ def parse_text_into_sentences(path):
     return sentences
 
 
+def parse_PDF_into_sentences(path):
+    sentences = []
+    for file in os.listdir(path):
+        if file.endswith(".pdf"):
+            filepath = f"{path}/{file}"
+            with pdfplumber.open(filepath) as pdf:
+                for page in pdf.pages:
+                    text = page.extract_text()
+                    text = text.replace("\n", " ")
+                    sentences.extend(nltk.sent_tokenize(text))
+                
+    return sentences
+    
+def filter_short_sentences(sentences, min_length=5):
+    return [sentence for sentence in sentences if len(sentence.split()) >= min_length]
+    
+def clean_text(text):
+    text = re.sub(r'[^a-zA-Z0-9\s]', '', text)
+    return text
+
+def clean_sentences(sentences):
+    return [clean_text(sentence) for sentence in sentences]
+
+def lowercase_text(text):
+    if isinstance(text, str):
+        return text.lower()
+    else:
+        # Handle the case when 'text' is not a string
+        return text
+
+def lowercase_sentences(sentences):
+    return [lowercase_text(sentence) for sentence in sentences]
+
+def clean_apply_all(sentences):
+    sentences = filter_short_sentences(sentences)
+    sentences = lowercase_sentences(sentences)
+    sentences = clean_sentences(sentences)
+    
+    return sentences
+
 def initialize_translation_client():
     creds = os.path.expanduser("~/GoogleTranslateAPI/creds.json")
     translator = translate.Client.from_service_account_json(creds)
     return translator
-
 
 def translate_sentance_GAPI(input_sentence, translator, lang_from, lang_to):
     result = translator.translate(
@@ -33,6 +75,8 @@ def subword_tokenize_sentence(sentence, tokenizer):
     tokenized = tokenizer.tokenize(sentence)
 
     return tokenized
+
+
 
 
 def encode_sentance_pair(sentence_pair, tokenizer):
