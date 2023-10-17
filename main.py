@@ -1,7 +1,16 @@
 import argparse
 import os
+import random
+from transformers import AutoTokenizer
+
 from utils.text_preprocessor import (
     parse_text_into_sentences,
+    translate_sentance_GAPI,
+    subword_tokenize_sentence,
+    encode_sentance_pair,
+    decode_sentance_pair,
+    initialize_translation_client,
+    translate_sentance_GAPI,
 )
 
 from utils.test_installation import (
@@ -15,11 +24,27 @@ password_file = os.path.expanduser("~/mysql.txt")
 with open(password_file, "r") as file:
     MySQLpassword = file.readlines()[1].strip()
 
+tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
 
-def preprocess_raw_data(data_path):
-    sentances = parse_text_into_sentences(data_path)
-    for sentance in sentances:
-        print(sentance)
+
+def preprocess_raw_data(data_path, tokenizer):
+    # sentances = parse_text_into_sentences(data_path)
+    # random_sentance = sentances[random.randint(0, sentances.__len__())]
+
+    # tokenized_sentance = subword_tokenize_sentence(random_sentance, tokenizer)
+
+    ex_en = "In the heart of a bustling metropolis."
+    ex_sv = "I hjärtat av en livlig metropol."
+    ex_pair = (ex_en, ex_sv)
+    endcoded = encode_sentance_pair(ex_pair, tokenizer)
+
+    decoded = decode_sentance_pair(endcoded, tokenizer)
+
+    translator = initialize_translation_client()
+    
+    print("English: ", ex_en)
+    translated_sentance = translate_sentance_GAPI(ex_en, translator, "en", "sv")
+    print("Swedish: ", translated_sentance)
 
 
 def create_dataset(data_path):
@@ -111,7 +136,7 @@ def main():
         test_installation()
 
     if args.preprocess:
-        preprocess_raw_data('data/raw_data/')
+        preprocess_raw_data("data/raw_data/", tokenizer)
 
 
 if __name__ == "__main__":
